@@ -1,41 +1,47 @@
-pipeline{
-    agent any
-  stages{
-    stage('1st Stage'){
-      steps{
-       echo "This is stage 1st"
-      }
-      
+pipeline {
+    agent any 
+    
+    environment {
+        dockerImage =''
+        registry = 'rohit19aug/rohit-user'
+        registryCredential = 'dockerhub_id'
     }
-    stage('2nd Stage'){
-      steps{
-       echo "This is stage 2nd"
-      }
-      
+    stages {
+        stage('Building the Dockjhver image') {
+            steps {
+                script {
+                    dockerImage = docker.build registry
+                }
+            }
+        }
+        stage('Uploading the image') {
+            when {
+                branch "Production"
+            }
+            steps {
+                script {
+                   docker.withRegistry( '', registryCredential ) {
+                       dockerImage.push()
+                   } 
+                }
+            }
+        }
+         stage('Creating deployment') {
+            steps { 
+               kubeconfig(caCertificate: '/home/knoldus/.minikube/ca.crt', credentialsId: 'kubernetes', serverUrl: 'https://192.168.49.2:8443') {
+                   sh 'kubectl apply -f service.yml'
+                   sh 'kubectl apply -f deployment.yml'
+               }  
+           }
+        }
+            stage('Creating service') {
+                steps { 
+                    kubeconfig(caCertificate: '/home/knoldus/.minikube/ca.crt', credentialsId: 'kubernetes', serverUrl: 'https://192.168.49.2:8443') {
+                        sh 'kubectl apply -f service.yml'
+                        // sh 'kubectl apply -f deployment.yml'
+                    }  
+                }
+            }
+        }
     }
-    stage('3rd Stage'){
-      steps{
-       echo "This is stage 3rd"
-      }
-      
-    }
-    stage('4th Stage'){
-      steps{
-       echo "This is stage 4th"
-      }
-      
-    }
-    stage('5th Stage'){
-      steps{
-       echo "This is stage 5th"
-      }
-      
-    }
-      stage('6th Stage'){
-      steps{
-       echo "This is stage 6th"
-      }
-      
-    }
-  }
-  }
+}
