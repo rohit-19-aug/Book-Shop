@@ -7,7 +7,7 @@ pipeline {
         registryCredential = 'dockerhub_id'
     }
     stages {
-        stage('Building the Dockjhver image') {
+        stage('Building the Docker image') {
             steps {
                 script {
                     dockerImage = docker.build registry
