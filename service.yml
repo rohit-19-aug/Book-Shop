@@ -5,7 +5,7 @@ metadata:
   name: service
 spec:
   selector:
-   app: MyProject
+   app: myproject
   ports:
   - port: 5000
     targetPort: 5000
